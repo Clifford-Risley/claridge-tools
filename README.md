@@ -46,13 +46,13 @@ A neighborhood tool-sharing app for the Claridge Farm HOA community in Carmel, I
 
 ## Stack
 
-| Layer    | Technology                              | Status      |
-|----------|-----------------------------------------|-------------|
-| Backend  | Python 3.13, FastAPI, SQLAlchemy 2 async | In progress |
-| Database | PostgreSQL 16                           | In progress |
-| Frontend | Next.js 15                              | Not started |
-| Auth     | Clerk                                   | Not started |
-| Hosting  | Asustor NAS + Cloudflare Zero Trust     | Not started |
+| Layer    | Technology                                | Status      |
+|----------|-------------------------------------------|-------------|
+| Backend  | Python 3.13, FastAPI, SQLAlchemy 2 async  | Done        |
+| Database | PostgreSQL 16                             | Done        |
+| Frontend | Next.js 15                                | Not started |
+| Auth     | Clerk                                     | Not started |
+| Hosting  | Asustor NAS + Cloudflare Zero Trust       | Not started |
 
 ---
 
