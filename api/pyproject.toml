@@ -42,8 +42,7 @@ select = [
     "ANN", # flake8-annotations
 ]
 ignore = [
-    "ANN101", # missing type annotation for self
-    "ANN102", # missing type annotation for cls
+    "B008", # FastAPI requires Depends() calls in function default arguments
 ]
 
 [tool.ruff.lint.isort]
