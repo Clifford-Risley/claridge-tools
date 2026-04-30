@@ -1,13 +1,14 @@
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool
+from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+import models  # noqa: F401 — registers User, Tool (and any future models) on Base.metadata
+from alembic import context
 from config import settings
 from db import Base
-import models  # noqa: F401 — registers User, Tool (and any future models) on Base.metadata
 
 config = context.config
 
@@ -37,7 +38,7 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def do_run_migrations(connection):  # type: ignore[no-untyped-def]
+def do_run_migrations(connection: Connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()
