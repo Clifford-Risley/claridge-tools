@@ -72,6 +72,8 @@ cp api/.env.example .env
 
 Edit `.env` and set real values for `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB`. The defaults in the example file work fine for local dev.
 
+> **Note:** There are two env files. `.env` (repo root) is read by Docker Compose. `api/.env` is read by the Python app when running `uvicorn` or `alembic` directly on the host. If you change the database credentials, update both files — `DATABASE_URL` in `api/.env` must match `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `.env`.
+
 ### 2. Start the database
 
 ```bash

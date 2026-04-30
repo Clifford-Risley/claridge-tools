@@ -13,3 +13,5 @@ neighborhood tool app (and future public items and a separate private family app
 Rejected: Auth.js (signals senior-eng-built-from-primitives, wrong signal), 
 self-hosted Authentik (ops burden too high for real users), removing CF Access 
 because "Clerk is enough" (defense in depth is deliberate, ZT also fronts private apps).
+
+Note for later: "clerk_id added to User in Sprint 5 model, not Sprint 6, because migration cost of retrofitting outweighed the premature-integration concern."
