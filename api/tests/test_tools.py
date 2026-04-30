@@ -1,3 +1,4 @@
+from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock
 
 import pytest
@@ -18,18 +19,16 @@ async def test_patch_returns_403_when_not_owner(
 ) -> None:
     # The route calls db.get(Tool, tool_id) before checking ownership.
     # Override get_db to return a mock session that hands back tool_owned_by_other.
-    async def mock_get_db() -> AsyncMock:
+    async def mock_get_db() -> AsyncGenerator[AsyncSession]:
         mock_db = AsyncMock(spec=AsyncSession)
         mock_db.get.return_value = tool_owned_by_other
-        yield mock_db  # type: ignore[misc]
+        yield mock_db
 
     app.dependency_overrides[get_current_user] = lambda: test_user
     app.dependency_overrides[get_db] = mock_get_db
 
     try:
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.patch(
                 f"/tools/{tool_owned_by_other.id}",
                 json={"name": "Stolen Name"},

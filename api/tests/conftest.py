@@ -1,4 +1,5 @@
 import os
+from collections.abc import Generator
 from datetime import datetime
 
 import pytest
@@ -69,7 +70,7 @@ def tool_owned_by_other(other_user: User) -> Tool:
 
 
 @pytest.fixture
-def client(test_user: User) -> AsyncClient:
+def client(test_user: User) -> Generator[AsyncClient]:
     """Test client with get_current_user stubbed out.
 
     Routes that call Depends(get_current_user) receive test_user directly —
@@ -80,6 +81,6 @@ def client(test_user: User) -> AsyncClient:
     transport = ASGITransport(app=app)
     client = AsyncClient(transport=transport, base_url="http://test")
 
-    yield client  # type: ignore[misc]
+    yield client
 
     app.dependency_overrides.clear()
