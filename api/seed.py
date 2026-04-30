@@ -12,8 +12,8 @@ import asyncio
 from sqlalchemy import text
 
 from db import AsyncSessionLocal
-from models.user import Role, User
 from models.tool import Tool
+from models.user import Role, User
 
 # ---------------------------------------------------------------------------
 # Seed data
@@ -99,7 +99,7 @@ TOOLS = [
     (
         0,
         "Honda EU2200i Generator",
-        "2200-watt inverter generator, quiet and fuel-efficient. Great for power outages or camping.",
+        "2200-watt inverter generator, quiet and fuel-efficient. Good for outages or camping.",
         "power tools",
         "Stored in garage. Runs on fresh 87 octane. Oil changed last fall.",
     ),
@@ -282,7 +282,7 @@ TOOLS = [
     (
         8,
         "Canning Kit — Waterbath",
-        "Complete waterbath canning set: 21-quart enamel pot, rack, jar lifter, funnel, and lid wand.",
+        "Complete waterbath canning set: 21-qt enamel pot, rack, jar lifter, funnel, and lid wand.",
         "kitchen/home",
         "Fits 7 quart jars or 9 pint jars. Comes with Ball Blue Book canning guide.",
     ),
