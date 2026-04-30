@@ -112,7 +112,7 @@ TOOLS = [
     ),
     (
         0,
-        "Snow Blower — Ariens 24\"",
+        'Snow Blower — Ariens 24"',
         "Two-stage snow blower, electric start, handles heavy wet snow with ease.",
         "seasonal",
         "Full tank of stabilized fuel. Chain-drive model — oil level matters.",
@@ -134,7 +134,7 @@ TOOLS = [
     ),
     (
         1,
-        "Tile Saw — 7\"",
+        'Tile Saw — 7"',
         "Wet tile saw with diamond blade. Cuts ceramic, porcelain, and natural stone.",
         "power tools",
         "Blade is fairly new. Empty the reservoir after use to prevent staining.",
@@ -150,14 +150,14 @@ TOOLS = [
     (
         2,
         "Chainsaw — Husqvarna 455 Rancher",
-        "18\" bar chainsaw, 55cc engine. Ready for firewood cutting or storm cleanup.",
+        '18" bar chainsaw, 55cc engine. Ready for firewood cutting or storm cleanup.',
         "power tools",
         "Chain sharpened recently. Mix 50:1 fuel. Chaps and helmet strongly recommended.",
     ),
     (
         2,
         "Trailer — 5x8 Utility",
-        "Open utility trailer with 2\" ball hitch, fold-down rear gate, and tie-down rings.",
+        'Open utility trailer with 2" ball hitch, fold-down rear gate, and tie-down rings.',
         "automotive",
         "Lights work. Spare tire is under the frame. Register as needed per state rules.",
     ),
@@ -178,7 +178,7 @@ TOOLS = [
     ),
     (
         3,
-        "Pipe Wrench Set — 14\" and 18\"",
+        'Pipe Wrench Set — 14" and 18"',
         "Heavy-duty cast-iron pipe wrenches for plumbing and mechanical work.",
         "hand tools",
         "Jaws adjusted and clean. Return oiled to prevent rust.",
@@ -193,7 +193,7 @@ TOOLS = [
     ),
     (
         4,
-        "Socket Set — 3/8\" Drive, SAE/Metric",
+        'Socket Set — 3/8" Drive, SAE/Metric',
         "108-piece chrome vanadium socket set with ratchet, extensions, and carrying case.",
         "hand tools",
         "Full set. Please return all pieces sorted in the tray.",
@@ -259,7 +259,7 @@ TOOLS = [
     ),
     (
         7,
-        "Miter Saw — 10\" Sliding Compound",
+        'Miter Saw — 10" Sliding Compound',
         "DeWalt 10-inch sliding compound miter saw with laser guide. Cuts crown and base.",
         "power tools",
         "Blade guard in place. Adjust bevel stop if needed. Dust bag attaches to rear port.",
@@ -296,14 +296,14 @@ TOOLS = [
     # Tom (9) — 3 tools
     (
         9,
-        "Trailer Hitch Ball Mount — 2\" Receiver",
+        'Trailer Hitch Ball Mount — 2" Receiver',
         "Drop hitch with 2-inch ball and 4-flat wiring harness adapter.",
         "automotive",
         "Fits 2-inch receiver hitch. Ball torqued to 250 ft-lbs.",
     ),
     (
         9,
-        "Circular Saw — Skil 7-1/4\"",
+        'Circular Saw — Skil 7-1/4"',
         "Corded 7-1/4 inch circular saw with rip fence and carbide-tipped blade.",
         "power tools",
         "Blade is sharp. Use the rip fence for straight cuts on sheet goods.",
@@ -321,6 +321,7 @@ TOOLS = [
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 async def seed() -> None:
     async with AsyncSessionLocal() as session:

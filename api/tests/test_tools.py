@@ -28,6 +28,7 @@ def _mock_execute_returning(tools: list[Tool]) -> AsyncMock:
 # Existing test
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_patch_returns_403_when_not_owner(
     test_user: User,
@@ -59,6 +60,7 @@ async def test_patch_returns_403_when_not_owner(
 # ---------------------------------------------------------------------------
 # 1. Happy path: create tool
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_create_tool_happy_path(test_user: User) -> None:
@@ -101,6 +103,7 @@ async def test_create_tool_happy_path(test_user: User) -> None:
 # 2. Happy path: list tools
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_list_tools_returns_results(test_user: User, test_tool: Tool) -> None:
     async def mock_get_db() -> AsyncGenerator[AsyncSession]:
@@ -127,6 +130,7 @@ async def test_list_tools_returns_results(test_user: User, test_tool: Tool) -> N
 # ---------------------------------------------------------------------------
 # 3. My tools only
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_my_tools_only_returns_owned_tools(
@@ -159,6 +163,7 @@ async def test_my_tools_only_returns_owned_tools(
 # 4. ILIKE search — hit
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_search_ilike_hit(test_user: User, test_tool: Tool) -> None:
     # test_tool has category_tag="power-tools"; query on "power" should hit.
@@ -185,6 +190,7 @@ async def test_search_ilike_hit(test_user: User, test_tool: Tool) -> None:
 # 5. ILIKE search — miss
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_search_ilike_miss(test_user: User) -> None:
     async def mock_get_db() -> AsyncGenerator[AsyncSession]:
@@ -206,6 +212,7 @@ async def test_search_ilike_miss(test_user: User) -> None:
 # ---------------------------------------------------------------------------
 # 6. PATCH own tool
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_patch_own_tool(test_user: User, test_tool: Tool) -> None:
@@ -239,6 +246,7 @@ async def test_patch_own_tool(test_user: User, test_tool: Tool) -> None:
 # ---------------------------------------------------------------------------
 # 7. DELETE nonowner blocked
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_delete_nonowner_blocked(
