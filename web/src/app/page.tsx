@@ -21,7 +21,7 @@ export default function HomePage() {
       <header className="flex h-14 shrink-0 items-center justify-between">
         <div className="flex items-center gap-2">
           <Image
-            src="/Flamingo logo.png"
+            src="/flamingo-logo.png"
             width={50}
             height={50}
             alt="Claridge Tools"
@@ -54,16 +54,16 @@ export default function HomePage() {
       <main className="flex flex-1 flex-col justify-center gap-8 py-6">
         <h1 className="text-4xl font-bold text-foreground">{greeting(user?.firstName)}</h1>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           <ActionTile
             href="/directory"
-            icon={<Search className="size-10 text-green-700" aria-hidden />}
+            icon={<Search className="size-14 text-green-700" aria-hidden />}
             title="Search Tools"
             description="Browse tools available from your neighbors."
           />
           <ActionTile
             href="/my-listings"
-            icon={<Toolbox className="size-10 text-green-700" aria-hidden />}
+            icon={<Toolbox className="size-14 text-green-700" aria-hidden />}
             title="Manage My Tools"
             description="See and edit the tools you've listed to share."
           />
@@ -88,15 +88,15 @@ function ActionTile({
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-5 rounded-xl border border-border bg-card p-5 shadow-sm",
+        "flex flex-col items-center justify-center gap-4 rounded-xl border border-border bg-card px-6 py-10 text-center shadow-sm",
         "transition-colors hover:bg-accent active:scale-[0.98]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       )}
     >
-      <div className="shrink-0">{icon}</div>
+      {icon}
       <div>
-        <p className="text-base font-semibold text-foreground">{title}</p>
-        <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+        <p className="text-lg font-bold text-foreground">{title}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
     </Link>
   )
