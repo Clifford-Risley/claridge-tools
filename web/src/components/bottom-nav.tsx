@@ -2,20 +2,28 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Search, Wrench } from "lucide-react"
+import { useUser } from "@clerk/nextjs"
+import { Home, LayoutDashboard, Search, Wrench } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { href: "/", label: "Home", icon: Home },
   { href: "/directory", label: "Search", icon: Search },
   { href: "/my-listings", label: "My Tools", icon: Wrench },
 ]
 
+const ADMIN_NAV_ITEM = { href: "/admin", label: "Admin", icon: LayoutDashboard }
+
 const HIDDEN_PATHS = ["/sign-in"]
 
 export function BottomNav() {
   const pathname = usePathname()
+  const { user } = useUser()
+
   if (HIDDEN_PATHS.some((p) => pathname.startsWith(p))) return null
+
+  const isAdmin = user?.publicMetadata?.role === "admin"
+  const navItems = isAdmin ? [...BASE_NAV_ITEMS, ADMIN_NAV_ITEM] : BASE_NAV_ITEMS
 
   return (
     <nav
@@ -24,7 +32,7 @@ export function BottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <ul className="flex h-14">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const active =
             href === "/"
               ? pathname === "/"
@@ -36,7 +44,7 @@ export function BottomNav() {
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors",
                   active
-                    ? "text-foreground"
+                    ? "text-green-700"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
