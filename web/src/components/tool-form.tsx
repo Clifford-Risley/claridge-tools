@@ -140,18 +140,21 @@ export function ToolForm({
             onChange={(e) => {
               setName(e.target.value)
               setIsDirty(true)
-              if (nameError) setNameError("")
+              if (nameError && e.target.value.trim()) setNameError("")
             }}
             placeholder="e.g. DeWalt 20V Cordless Drill"
+            aria-invalid={!!nameError}
+            aria-describedby={nameError ? "tool-name-error" : undefined}
             className={cn(
               "w-full rounded-lg border bg-background px-3 py-2.5 text-sm text-foreground",
               "placeholder:text-muted-foreground",
-              "focus:outline-none focus:ring-2 focus:ring-ring",
-              nameError ? "border-destructive focus:ring-destructive/50" : "border-input",
+              "focus:outline-none focus:ring-2",
+              !nameError && "border-input focus:ring-ring",
+              nameError && "border-destructive focus:ring-destructive/50",
             )}
           />
           {nameError && (
-            <p className="text-xs text-destructive" role="alert">
+            <p id="tool-name-error" className="text-xs text-destructive" role="alert">
               {nameError}
             </p>
           )}
