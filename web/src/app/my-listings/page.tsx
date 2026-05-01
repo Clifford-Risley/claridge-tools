@@ -1,6 +1,7 @@
 "use client"
 
 import { Suspense, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
@@ -64,9 +65,19 @@ function MyListingsView() {
   }
 
   return (
-    <div className="flex flex-col">
-      <header className="flex h-14 items-center justify-between border-b border-border px-4">
-        <h1 className="text-lg font-semibold">My Tools</h1>
+    <div className="flex h-[calc(100dvh-3.5rem)] flex-col">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4">
+        <div className="flex items-center gap-2">
+          <Image
+            src="/flamingo-logo.png"
+            width={40}
+            height={40}
+            alt="Claridge Tools"
+            priority
+            unoptimized
+          />
+          <span className="text-base font-bold text-green-700">Claridge Tools</span>
+        </div>
         <Link
           href="/my-account"
           className="flex items-center gap-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -87,23 +98,32 @@ function MyListingsView() {
         </Link>
       </header>
 
-      {tools.length === 0 ? (
-        <EmptyState onAddTool={() => setModalOpen(true)} />
-      ) : (
-        <div className="flex flex-col gap-3 p-4">
-          {tools.map((tool) => (
-            <ToolCard
-              key={tool.id}
-              tool={tool}
-              confirming={confirmId === tool.id}
-              onConfirmStart={() => setConfirmId(tool.id)}
-              onConfirmCancel={() => setConfirmId(null)}
-              onConfirmRemove={() => handleRemove(tool.id)}
-            />
-          ))}
-          <AddToolButton onClick={() => setModalOpen(true)} />
+      <div className="flex-1 overflow-y-auto px-4 pb-6 pt-5">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-foreground">My Tools</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage the tools you share with your neighbors.
+          </p>
         </div>
-      )}
+
+        {tools.length === 0 ? (
+          <EmptyState onAddTool={() => setModalOpen(true)} />
+        ) : (
+          <div className="flex flex-col gap-3">
+            {tools.map((tool) => (
+              <ToolCard
+                key={tool.id}
+                tool={tool}
+                confirming={confirmId === tool.id}
+                onConfirmStart={() => setConfirmId(tool.id)}
+                onConfirmCancel={() => setConfirmId(null)}
+                onConfirmRemove={() => handleRemove(tool.id)}
+              />
+            ))}
+            <AddToolButton onClick={() => setModalOpen(true)} />
+          </div>
+        )}
+      </div>
 
       <AddToolModal open={modalOpen} onOpenChange={setModalOpen} />
     </div>

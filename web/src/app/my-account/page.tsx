@@ -4,8 +4,8 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useUser } from "@clerk/nextjs"
-import { ChevronRight, Heart, X } from "lucide-react"
-import { Dialog } from "@base-ui/react/dialog"
+import { ChevronRight, Heart } from "lucide-react"
+import { EditProfileModal } from "@/components/edit-profile-modal"
 import { ProfileCard } from "@/components/profile-card"
 import { cn } from "@/lib/utils"
 
@@ -138,44 +138,17 @@ export default function MyAccountPage() {
         </footer>
       </div>
 
-      <EditProfileModal open={editOpen} onClose={() => setEditOpen(false)} />
+      <EditProfileModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        isAdmin={isAdmin}
+        initialName={fullName}
+        initialEmail={email}
+        initialPhone={phone}
+        initialAddress={address}
+        initialMemberSinceYear={memberSinceYear}
+        initialImageUrl={user?.imageUrl ?? null}
+      />
     </div>
-  )
-}
-
-function EditProfileModal({
-  open,
-  onClose,
-}: {
-  open: boolean
-  onClose: () => void
-}) {
-  return (
-    <Dialog.Root open={open} onOpenChange={(v) => { if (!v) onClose() }}>
-      <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50" />
-        <Dialog.Popup
-          className={cn(
-            "fixed inset-x-4 top-1/2 z-50 -translate-y-1/2 rounded-2xl bg-background p-6 shadow-xl",
-            "focus:outline-none",
-          )}
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <Dialog.Title className="text-base font-bold text-foreground">
-              Edit Profile
-            </Dialog.Title>
-            <Dialog.Close
-              className="flex size-8 items-center justify-center rounded-full transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Close"
-            >
-              <X className="size-4" aria-hidden />
-            </Dialog.Close>
-          </div>
-          <Dialog.Description className="text-sm text-muted-foreground">
-            Edit Profile coming soon.
-          </Dialog.Description>
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
   )
 }

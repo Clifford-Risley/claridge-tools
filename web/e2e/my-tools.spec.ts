@@ -28,7 +28,7 @@ test("empty state renders when no tools are present", async ({ page }) => {
   await signInWithEmail(page, email, password)
   await page.goto("/my-listings?empty=true")
   await expect(page.getByText(/add your first tool/i)).toBeVisible()
-  await expect(page.getByRole("link", { name: /add a tool/i })).toBeVisible()
+  await expect(page.getByRole("button", { name: /add a tool/i })).toBeVisible()
 })
 
 test("Remove button requires confirmation before tool is removed", async ({ page }) => {
