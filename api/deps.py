@@ -7,11 +7,18 @@ a specific resource. Keep those two things apart — deps.py never returns 403,
 routes never decode tokens.
 """
 
+import asyncio
+from typing import Any
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jwt import PyJWKClient
+from jwt import decode as jwt_decode
+from jwt.exceptions import ExpiredSignatureError, PyJWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import settings
 from db import get_db
 from models.user import User
 
@@ -20,6 +27,46 @@ from models.user import User
 # default 403 when the header is missing entirely.
 _bearer = HTTPBearer(auto_error=False)
 
+# Module-level JWKS client — created lazily on first request, shared for the
+# lifetime of the process. PyJWKClient caches keys and auto-refetches when an
+# unknown kid is encountered, handling Clerk key rotations transparently.
+_jwks_client: PyJWKClient | None = None
+
+
+def _get_jwks_client() -> PyJWKClient:
+    global _jwks_client
+    if _jwks_client is None:
+        _jwks_client = PyJWKClient(settings.clerk_jwks_url, cache_jwk_set=True, lifespan=300)
+    return _jwks_client
+
+
+async def _verify_clerk_jwt(token: str) -> str:
+    """Verify a Clerk-issued JWT and return the clerk_id (sub claim).
+
+    Runs the synchronous PyJWKClient JWKS fetch in a thread pool to avoid
+    blocking the event loop.
+
+    Raises:
+        ExpiredSignatureError: token is past its exp claim.
+        PyJWTError: signature invalid, issuer mismatch, malformed token, etc.
+    """
+    client = _get_jwks_client()
+
+    def _sync() -> str:
+        signing_key = client.get_signing_key_from_jwt(token)
+        payload: dict[str, Any] = jwt_decode(
+            token,
+            signing_key.key,
+            algorithms=["RS256"],
+            issuer=settings.clerk_issuer,
+        )
+        sub = payload.get("sub")
+        if not isinstance(sub, str):
+            raise PyJWTError("sub claim missing or not a string")
+        return sub
+
+    return await asyncio.to_thread(_sync)
+
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
@@ -27,15 +74,9 @@ async def get_current_user(
 ) -> User:
     """Resolve the bearer token to a User row.
 
-    Sprint 6 will replace the stub block with real Clerk JWT verification.
-    The function signature, return type, and raised exceptions will not change,
-    so every route that depends on this can be written now and will work
-    unchanged after the real implementation lands.
-
     Raises:
         401 if no Authorization header is present.
-        401 if the token does not map to a known user (stub: any token works,
-            real: invalid/expired JWTs will be rejected here).
+        401 if the token is expired or has an invalid signature/issuer.
         404 if the clerk_id from the token is not in the database yet.
     """
     if credentials is None:
@@ -45,10 +86,20 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # SPRINT 6: replace this line with Clerk JWT verification
-    # clerk_id = await verify_clerk_jwt(credentials.credentials)
-    clerk_id = credentials.credentials  # stub: raw token treated as clerk_id
-    # ------------------------------------------------------------------ #
+    try:
+        clerk_id = await _verify_clerk_jwt(credentials.credentials)
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from None
+    except PyJWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from None
 
     result = await db.execute(select(User).where(User.clerk_id == clerk_id))
     user = result.scalar_one_or_none()
