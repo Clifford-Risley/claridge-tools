@@ -1,8 +1,5 @@
+import { ToolForm } from "@/components/tool-form"
+
 export default function NewToolPage() {
-  return (
-    <div>
-      <h1>New Tool</h1>
-      <p>Coming soon.</p>
-    </div>
-  );
+  return <ToolForm mode="new" />
 }
