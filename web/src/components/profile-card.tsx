@@ -1,6 +1,6 @@
 "use client"
 
-import { Mail, MapPin, Pencil, Phone, ShieldCheck, Star } from "lucide-react"
+import { Mail, MapPin, Pencil, Phone, ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ProfileCardProps {
@@ -43,10 +43,10 @@ export function ProfileCard({
             <img
               src={imageUrl}
               alt={fullName}
-              className="size-20 rounded-full object-cover ring-2 ring-border"
+              className="size-24 rounded-full object-cover ring-2 ring-border"
             />
           ) : (
-            <div className="flex size-20 items-center justify-center rounded-full bg-muted text-xl font-semibold text-muted-foreground">
+            <div className="flex size-24 items-center justify-center rounded-full bg-muted text-xl font-semibold text-muted-foreground">
               {initials}
             </div>
           )}
@@ -73,7 +73,7 @@ export function ProfileCard({
               data-testid="admin-badge"
               className="flex w-fit items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700"
             >
-              <Star className="size-3 fill-current" aria-hidden />
+              <ShieldCheck className="size-3" aria-hidden />
               Admin
             </span>
           )}
@@ -99,15 +99,15 @@ function ProfileField({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <Icon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
       <span
         className={cn(
-          "truncate text-sm",
+          "min-w-0 flex-1 truncate text-sm",
           value ? "text-foreground" : "text-muted-foreground",
         )}
       >
         {value ?? "Not provided"}
       </span>
+      <Icon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
     </div>
   )
 }
