@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     database_url: str
     clerk_jwks_url: str = ""
     clerk_issuer: str = ""
+    clerk_secret_key: str = ""
+    admin_clerk_user_id: str = ""
 
 
 settings = Settings()
