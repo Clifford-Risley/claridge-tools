@@ -22,8 +22,8 @@ export default function HomePage() {
         <div className="flex items-center gap-2">
           <Image
             src="/flamingo-logo.png"
-            width={50}
-            height={50}
+            width={100}
+            height={100}
             alt="Claridge Tools"
             priority
           />
