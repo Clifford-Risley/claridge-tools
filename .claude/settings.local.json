@@ -21,7 +21,11 @@
       "Bash(curl -sv http://localhost:3000/sign-in)",
       "Bash(pip install *)",
       "Bash(git commit -m ' *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(Get-ChildItem *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Clifford\\\\Projects\\\\claridge-tools\\\\web\\\\src\" -Recurse -Force | Where-Object { !$_.PSIsContainer } | Select-Object @{Name='RelativePath';Expression={$_.FullName -replace [regex]::Escape\\(\"C:\\\\Users\\\\Clifford\\\\Projects\\\\claridge-tools\\\\web\\\\\"\\)}} | Sort-Object RelativePath)",
+      "Bash(npx tsc *)",
+      "Bash(git commit *)"
     ]
   }
 }
