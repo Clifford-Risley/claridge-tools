@@ -1,65 +1,103 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import Image from "next/image"
+import Link from "next/link"
+import { useUser } from "@clerk/nextjs"
+import { ChevronRight, Search, Toolbox } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+function greeting(firstName: string | null | undefined): string {
+  if (firstName) return `Hi ${firstName}`
+  if (process.env.NODE_ENV === "development") return "Hi Anna"
+  return "Hi there"
+}
+
+export default function HomePage() {
+  const { user } = useUser()
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col px-5">
+      {/* Header */}
+      <header className="flex h-14 shrink-0 items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Image
+            src="/Flamingo logo.png"
+            width={50}
+            height={50}
+            alt="Claridge Tools"
+            priority
+          />
+          <span className="text-base font-bold text-green-700">Claridge Tools</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        <Link
+          href="/my-account"
+          className="flex items-center gap-1 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Account settings"
+        >
+          {user?.imageUrl ? (
+            <img
+              src={user.imageUrl}
+              alt={user.firstName ?? "Account"}
+              className="size-8 rounded-full object-cover"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ) : (
+            <div className="flex size-8 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
+              {user?.firstName?.[0] ?? "?"}
+            </div>
+          )}
+          <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
+        </Link>
+      </header>
+
+      {/* Main content — fills remaining space, centered vertically */}
+      <main className="flex flex-1 flex-col justify-center gap-8 py-6">
+        <h1 className="text-4xl font-bold text-foreground">{greeting(user?.firstName)}</h1>
+
+        <div className="flex flex-col gap-4">
+          <ActionTile
+            href="/directory"
+            icon={<Search className="size-10 text-green-700" aria-hidden />}
+            title="Search Tools"
+            description="Browse tools available from your neighbors."
+          />
+          <ActionTile
+            href="/my-listings"
+            icon={<Toolbox className="size-10 text-green-700" aria-hidden />}
+            title="Manage My Tools"
+            description="See and edit the tools you've listed to share."
+          />
         </div>
       </main>
     </div>
-  );
+  )
+}
+
+function ActionTile({
+  href,
+  icon,
+  title,
+  description,
+}: {
+  href: string
+  icon: React.ReactNode
+  title: string
+  description: string
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-5 rounded-xl border border-border bg-card p-5 shadow-sm",
+        "transition-colors hover:bg-accent active:scale-[0.98]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+      )}
+    >
+      <div className="shrink-0">{icon}</div>
+      <div>
+        <p className="text-base font-semibold text-foreground">{title}</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+      </div>
+    </Link>
+  )
 }
