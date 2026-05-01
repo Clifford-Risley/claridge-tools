@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 import { ChevronRight, Pencil, Plus, Trash2, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { AddToolModal } from "@/components/add-tool-modal"
 import { cn } from "@/lib/utils"
 
 interface Tool {
@@ -55,6 +56,7 @@ function MyListingsView() {
 
   const [tools, setTools] = useState<Tool[]>(showEmpty ? [] : SEED_TOOLS)
   const [confirmId, setConfirmId] = useState<string | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
 
   function handleRemove(id: string) {
     setTools((prev) => prev.filter((t) => t.id !== id))
@@ -86,7 +88,7 @@ function MyListingsView() {
       </header>
 
       {tools.length === 0 ? (
-        <EmptyState />
+        <EmptyState onAddTool={() => setModalOpen(true)} />
       ) : (
         <div className="flex flex-col gap-3 p-4">
           {tools.map((tool) => (
@@ -99,14 +101,16 @@ function MyListingsView() {
               onConfirmRemove={() => handleRemove(tool.id)}
             />
           ))}
-          <AddToolButton />
+          <AddToolButton onClick={() => setModalOpen(true)} />
         </div>
       )}
+
+      <AddToolModal open={modalOpen} onOpenChange={setModalOpen} />
     </div>
   )
 }
 
-function EmptyState() {
+function EmptyState({ onAddTool }: { onAddTool: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 px-6 py-24 text-center">
       <Wrench className="size-12 text-muted-foreground/30" aria-hidden />
@@ -116,15 +120,16 @@ function EmptyState() {
           Add your first tool to share with neighbors.
         </p>
       </div>
-      <AddToolButton />
+      <AddToolButton onClick={onAddTool} />
     </div>
   )
 }
 
-function AddToolButton() {
+function AddToolButton({ onClick }: { onClick: () => void }) {
   return (
-    <Link
-      href="/tools/new"
+    <button
+      type="button"
+      onClick={onClick}
       className={cn(
         "flex w-full items-center justify-center gap-2 rounded-lg",
         "bg-green-600 px-4 py-3 text-sm font-semibold text-white",
@@ -134,7 +139,7 @@ function AddToolButton() {
     >
       <Plus className="size-4" aria-hidden />
       Add a Tool
-    </Link>
+    </button>
   )
 }
 

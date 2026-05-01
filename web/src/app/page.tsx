@@ -22,10 +22,11 @@ export default function HomePage() {
         <div className="flex items-center gap-2">
           <Image
             src="/flamingo-logo.png"
-            width={100}
-            height={100}
+            width={40}
+            height={40}
             alt="Claridge Tools"
             priority
+            unoptimized
           />
           <span className="text-base font-bold text-green-700">Claridge Tools</span>
         </div>
