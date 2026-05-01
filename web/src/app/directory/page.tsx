@@ -4,8 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useUser } from "@clerk/nextjs"
-import { ChevronRight, Search, SlidersHorizontal, X } from "lucide-react"
-import { Dialog } from "@base-ui/react/dialog"
+import { ChevronRight, Search } from "lucide-react"
 import { CategoryChip } from "@/components/category-chip"
 import { ToolCard, type Tool } from "@/components/tool-card"
 import { cn } from "@/lib/utils"
@@ -109,7 +108,6 @@ export default function DirectoryPage() {
   const [query, setQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set())
-  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const filteredTools = SEED_TOOLS.filter((t) => {
     if (t.removed) return false
@@ -117,7 +115,8 @@ export default function DirectoryPage() {
     if (
       q &&
       !t.name.toLowerCase().includes(q) &&
-      !t.description.toLowerCase().includes(q)
+      !t.description.toLowerCase().includes(q) &&
+      !t.owner.toLowerCase().includes(q)
     )
       return false
     // "More" acts as a pass-through placeholder until additional categories are defined
@@ -199,20 +198,6 @@ export default function DirectoryPage() {
             />
           </div>
 
-          {/* Filters button */}
-          <button
-            type="button"
-            onClick={() => setFiltersOpen(true)}
-            className={cn(
-              "flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-2.5 text-sm font-medium",
-              "transition-colors hover:bg-muted",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            )}
-            aria-label="Open filters"
-          >
-            <SlidersHorizontal className="size-4" aria-hidden />
-            Filters
-          </button>
         </div>
 
         {/* Category chips — horizontally scrollable, negative margin to bleed to edges */}
@@ -254,8 +239,6 @@ export default function DirectoryPage() {
         )}
       </div>
 
-      {/* Filters stub modal */}
-      <FiltersModal open={filtersOpen} onClose={() => setFiltersOpen(false)} />
     </div>
   )
 }
@@ -285,39 +268,3 @@ function EmptyState({ onClear }: { onClear: () => void }) {
   )
 }
 
-function FiltersModal({
-  open,
-  onClose,
-}: {
-  open: boolean
-  onClose: () => void
-}) {
-  return (
-    <Dialog.Root open={open} onOpenChange={(v) => { if (!v) onClose() }}>
-      <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50" />
-        <Dialog.Popup
-          className={cn(
-            "fixed inset-x-4 top-1/2 z-50 -translate-y-1/2 rounded-2xl bg-background p-6 shadow-xl",
-            "focus:outline-none",
-          )}
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <Dialog.Title className="text-base font-bold text-foreground">
-              Filters
-            </Dialog.Title>
-            <Dialog.Close
-              className="flex size-8 items-center justify-center rounded-full transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Close filters"
-            >
-              <X className="size-4" aria-hidden />
-            </Dialog.Close>
-          </div>
-          <Dialog.Description className="text-sm text-muted-foreground">
-            Filters coming soon.
-          </Dialog.Description>
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
-  )
-}
