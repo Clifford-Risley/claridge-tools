@@ -7,6 +7,8 @@ from httpx import ASGITransport, AsyncClient
 
 # Must be set before any app module is imported so pydantic-settings can build Settings().
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
+os.environ.setdefault("CLERK_JWKS_URL", "https://clerk.test/.well-known/jwks.json")
+os.environ.setdefault("CLERK_ISSUER", "https://clerk.test")
 
 from deps import get_current_user  # noqa: E402 — import must follow env setup
 from main import app
