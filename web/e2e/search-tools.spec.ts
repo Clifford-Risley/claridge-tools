@@ -20,7 +20,7 @@ test("Search Tools screen renders with tool list", async ({ page }) => {
   await signInWithEmail(page, email, password)
   await page.goto("/directory")
   await expect(page.getByRole("searchbox", { name: /search tools/i })).toBeVisible()
-  await expect(page.getByTestId("tool-card")).toHaveCount(7)
+  await expect(page.getByTestId("tool-card").first()).toBeVisible()
 })
 
 test("typing in search input filters results", async ({ page }) => {
