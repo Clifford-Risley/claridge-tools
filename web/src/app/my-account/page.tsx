@@ -37,6 +37,8 @@ export default function MyAccountPage() {
   const { user } = useUser()
   const [editOpen, setEditOpen] = useState(false)
 
+  const isAdmin = user?.publicMetadata?.role === "admin"
+
   const fullName =
     (user?.fullName ??
       [user?.firstName, user?.lastName].filter(Boolean).join(" ")) ||
@@ -97,6 +99,7 @@ export default function MyAccountPage() {
           address={address}
           memberSinceYear={memberSinceYear}
           onEditProfile={() => setEditOpen(true)}
+          isAdmin={isAdmin}
         />
 
         <div className="mt-5 flex flex-col gap-4">
