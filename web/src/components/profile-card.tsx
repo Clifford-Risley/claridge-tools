@@ -1,6 +1,6 @@
 "use client"
 
-import { Mail, MapPin, Pencil, Phone, ShieldCheck } from "lucide-react"
+import { Mail, MapPin, Pencil, Phone, ShieldCheck, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ProfileCardProps {
@@ -11,6 +11,7 @@ interface ProfileCardProps {
   address: string | null
   memberSinceYear: number | null
   onEditProfile: () => void
+  isAdmin?: boolean
 }
 
 export function ProfileCard({
@@ -21,6 +22,7 @@ export function ProfileCard({
   address,
   memberSinceYear,
   onEditProfile,
+  isAdmin = false,
 }: ProfileCardProps) {
   const initials = fullName
     .split(" ")
@@ -66,6 +68,15 @@ export function ProfileCard({
         {/* Right column: name + detail rows */}
         <div className="flex min-w-0 flex-1 flex-col gap-2 pt-1">
           <p className="font-bold leading-snug text-foreground">{fullName}</p>
+          {isAdmin && (
+            <span
+              data-testid="admin-badge"
+              className="flex w-fit items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700"
+            >
+              <Star className="size-3 fill-current" aria-hidden />
+              Admin
+            </span>
+          )}
           <ProfileField icon={Mail} value={email} />
           <ProfileField icon={Phone} value={phone} />
           <ProfileField icon={MapPin} value={address} />

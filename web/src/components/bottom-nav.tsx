@@ -16,6 +16,17 @@ const ADMIN_NAV_ITEM = { href: "/admin", label: "Admin", icon: LayoutDashboard }
 
 const HIDDEN_PATHS = ["/sign-in"]
 
+function getIsActive(href: string, pathname: string, isAdminUser: boolean): boolean {
+  if (href === "/") return pathname === "/"
+  // /my-account sits under My Tools for neighbors, Admin for admins
+  if (pathname === "/my-account") {
+    if (href === "/my-listings") return !isAdminUser
+    if (href === "/admin") return isAdminUser
+    return false
+  }
+  return pathname === href || pathname.startsWith(href + "/")
+}
+
 export function BottomNav() {
   const pathname = usePathname()
   const { user } = useUser()
@@ -33,10 +44,7 @@ export function BottomNav() {
     >
       <ul className="flex h-14">
         {navItems.map(({ href, label, icon: Icon }) => {
-          const active =
-            href === "/"
-              ? pathname === "/"
-              : pathname === href || pathname.startsWith(href + "/")
+          const active = getIsActive(href, pathname, isAdmin)
           return (
             <li key={href} className="flex flex-1">
               <Link
