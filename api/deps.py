@@ -8,9 +8,9 @@ routes never decode tokens.
 """
 
 import asyncio
-from typing import Any
+from typing import Any, cast
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import PyJWKClient
 from jwt import decode as jwt_decode
@@ -69,6 +69,7 @@ async def _verify_clerk_jwt(token: str) -> str:
 
 
 async def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
     db: AsyncSession = Depends(get_db),
 ) -> User:
@@ -79,6 +80,9 @@ async def get_current_user(
         401 if the token is expired or has an invalid signature/issuer.
         404 if the clerk_id from the token is not in the database yet.
     """
+    if request.method == "OPTIONS":
+        return cast(User, None)
+
     if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
