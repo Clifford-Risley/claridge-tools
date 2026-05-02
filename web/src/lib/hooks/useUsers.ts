@@ -4,18 +4,19 @@ import type { AdminUser } from "@/components/admin-user-row"
 import * as api from "@/lib/api"
 
 export function useCurrentUser() {
-  const { getToken } = useAuth()
+  const { getToken, isLoaded, isSignedIn } = useAuth()
   return useQuery({
     queryKey: ["users", "me"],
     queryFn: async () => {
       const token = await getToken()
       return api.getCurrentUser(token)
     },
+    enabled: isLoaded && !!isSignedIn,
   })
 }
 
 export function useAdminUsers() {
-  const { getToken } = useAuth()
+  const { getToken, isLoaded, isSignedIn } = useAuth()
   return useQuery({
     queryKey: ["admin", "users"],
     queryFn: async () => {
@@ -28,6 +29,7 @@ export function useAdminUsers() {
         role: u.role === "admin" ? "admin" : "neighbor",
       }))
     },
+    enabled: isLoaded && !!isSignedIn,
   })
 }
 

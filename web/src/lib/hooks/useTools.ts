@@ -3,18 +3,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import * as api from "@/lib/api"
 
 export function useSearchTools(q: string) {
-  const { getToken } = useAuth()
+  const { getToken, isLoaded, isSignedIn } = useAuth()
   return useQuery({
     queryKey: ["tools", { q }],
     queryFn: async () => {
       const token = await getToken()
       return api.getTools(q || undefined, token)
     },
+    enabled: isLoaded && !!isSignedIn,
   })
 }
 
 export function useMyTools(currentUserId: number) {
-  const { getToken } = useAuth()
+  const { getToken, isLoaded, isSignedIn } = useAuth()
   return useQuery({
     queryKey: ["tools", { myTools: true }],
     queryFn: async () => {
@@ -22,30 +23,31 @@ export function useMyTools(currentUserId: number) {
       const tools = await api.getTools(undefined, token)
       return tools.filter((t) => t.owner_id === currentUserId)
     },
-    enabled: currentUserId > 0,
+    enabled: isLoaded && !!isSignedIn && currentUserId > 0,
   })
 }
 
 export function useTool(toolId: number) {
-  const { getToken } = useAuth()
+  const { getToken, isLoaded, isSignedIn } = useAuth()
   return useQuery({
     queryKey: ["tools", toolId],
     queryFn: async () => {
       const token = await getToken()
       return api.getTool(toolId, token)
     },
-    enabled: toolId > 0,
+    enabled: isLoaded && !!isSignedIn && toolId > 0,
   })
 }
 
 export function useAdminTools() {
-  const { getToken } = useAuth()
+  const { getToken, isLoaded, isSignedIn } = useAuth()
   return useQuery({
     queryKey: ["admin", "tools"],
     queryFn: async () => {
       const token = await getToken()
       return api.getAdminTools(token)
     },
+    enabled: isLoaded && !!isSignedIn,
   })
 }
 
