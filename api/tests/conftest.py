@@ -9,6 +9,8 @@ from httpx import ASGITransport, AsyncClient
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
 os.environ.setdefault("CLERK_JWKS_URL", "https://clerk.test/.well-known/jwks.json")
 os.environ.setdefault("CLERK_ISSUER", "https://clerk.test")
+# 32 zero bytes base64-encoded — matches _TEST_SECRET_BYTES in test_webhooks.py
+os.environ.setdefault("CLERK_WEBHOOK_SECRET", "whsec_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
 
 from deps import get_current_user  # noqa: E402 — import must follow env setup
 from main import app

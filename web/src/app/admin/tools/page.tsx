@@ -8,95 +8,47 @@ import { useUser } from "@clerk/nextjs"
 import { ChevronRight, Plus, ShieldCheck } from "lucide-react"
 import { AddToolModal } from "@/components/add-tool-modal"
 import { ToolCard, type Tool } from "@/components/tool-card"
+import { useAdminTools, useDeleteTool } from "@/lib/hooks/useTools"
 import { cn } from "@/lib/utils"
+import type { ToolReadWithOwner } from "@/lib/api"
 
-type Filter = "all" | "available" | "removed"
+type Filter = "all" | "available"
 
-const SEED_TOOLS: Tool[] = [
-  {
-    id: "1",
-    name: "DeWalt Power Drill",
-    description: "18V cordless drill with two batteries, charger, and full bit set.",
-    category: "Power Tools",
-    owner: "Mike T.",
-    ownerInitials: "MT",
+function apiToolToCard(t: ToolReadWithOwner): Tool {
+  const initials = t.owner_name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase()
+  return {
+    id: String(t.id),
+    name: t.name,
+    description: t.description ?? "",
+    category: t.category_tag ?? "",
+    owner: t.owner_name,
+    ownerInitials: initials || "?",
     ownerImageUrl: null,
     imageUrl: null,
     removed: false,
-  },
-  {
-    id: "2",
-    name: "24 ft Extension Ladder",
-    description: "Aluminum extension ladder, excellent condition. Great for gutters and rooflines.",
-    category: "Ladders",
-    owner: "Sarah K.",
-    ownerInitials: "SK",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: false,
-  },
-  {
-    id: "3",
-    name: "Lawn Mower",
-    description: "Self-propelled gas lawn mower. Easy pull-start, sharp blade, recently serviced.",
-    category: "Yard Work",
-    owner: "Anna P.",
-    ownerInitials: "AP",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: false,
-  },
-  {
-    id: "4",
-    name: "Pressure Washer",
-    description: "2,000 PSI electric pressure washer with 25 ft hose and four nozzle tips.",
-    category: "Cleaning",
-    owner: "Tom B.",
-    ownerInitials: "TB",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: false,
-  },
-  {
-    id: "5",
-    name: "Old Chainsaw",
-    description: "Gas chainsaw, no longer serviceable. Removed from listings.",
-    category: "Power Tools",
-    owner: "Frank W.",
-    ownerInitials: "FW",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: true,
-    removedDate: "Mar 12, 2025",
-  },
-  {
-    id: "6",
-    name: "Broken Hedge Trimmer",
-    description: "Electric hedge trimmer, motor failed. Removed pending repair.",
-    category: "Yard Work",
-    owner: "Lisa M.",
-    ownerInitials: "LM",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: true,
-    removedDate: "Jan 8, 2025",
-  },
-]
+  }
+}
 
 const EMPTY_MESSAGES: Record<Filter, string> = {
   all: "No tools yet.",
   available: "No available tools.",
-  removed: "No removed tools.",
 }
 
 export default function AdminToolsPage() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
 
-  const [tools, setTools] = useState<Tool[]>(SEED_TOOLS)
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [activeFilter, setActiveFilter] = useState<Filter>("all")
   const [modalOpen, setModalOpen] = useState(false)
+
+  const { data: apiTools = [], isLoading, error } = useAdminTools()
+  const deleteTool = useDeleteTool()
 
   useEffect(() => {
     if (!isLoaded) return
@@ -107,41 +59,14 @@ export default function AdminToolsPage() {
 
   if (!isLoaded || user?.publicMetadata?.role !== "admin") return null
 
-  const allCount = tools.length
-  const availableCount = tools.filter((t) => !t.removed).length
-  const removedCount = tools.filter((t) => t.removed).length
+  const tools = apiTools.map(apiToolToCard)
+  const filteredTools = activeFilter === "available" ? tools : tools
 
-  const filteredTools = tools.filter((t) => {
-    if (activeFilter === "available") return !t.removed
-    if (activeFilter === "removed") return t.removed
-    return true
-  })
+  const allCount = tools.length
+  const availableCount = tools.length
 
   function handleRemove(id: string) {
-    setTools((prev) =>
-      prev.map((t) =>
-        t.id === id
-          ? {
-              ...t,
-              removed: true,
-              removedDate: new Date().toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              }),
-            }
-          : t,
-      ),
-    )
-    setConfirmId(null)
-  }
-
-  function handleRestore(id: string) {
-    setTools((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, removed: false, removedDate: null } : t,
-      ),
-    )
+    deleteTool.mutate(Number(id), { onSuccess: () => setConfirmId(null) })
   }
 
   return (
@@ -191,7 +116,7 @@ export default function AdminToolsPage() {
           </span>
         </div>
         <p className="mb-5 text-sm text-muted-foreground">
-          Manage all tools across the community, including removed listings.
+          Manage all tools across the community.
         </p>
 
         {/* Add a Tool */}
@@ -223,16 +148,14 @@ export default function AdminToolsPage() {
             active={activeFilter === "available"}
             onClick={() => setActiveFilter("available")}
           />
-          <FilterPill
-            label="Removed"
-            count={removedCount}
-            active={activeFilter === "removed"}
-            onClick={() => setActiveFilter("removed")}
-          />
         </div>
 
         {/* Tool list */}
-        {filteredTools.length === 0 ? (
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : error ? (
+          <p className="py-12 text-center text-sm text-destructive">{error.message}</p>
+        ) : filteredTools.length === 0 ? (
           <p
             className="py-12 text-center text-sm text-muted-foreground"
             data-testid="empty-state"
@@ -250,7 +173,6 @@ export default function AdminToolsPage() {
                 onConfirmStart={() => setConfirmId(tool.id)}
                 onConfirmCancel={() => setConfirmId(null)}
                 onConfirmRemove={() => handleRemove(tool.id)}
-                onRestore={() => handleRestore(tool.id)}
               />
             ))}
           </div>
@@ -258,6 +180,22 @@ export default function AdminToolsPage() {
       </div>
 
       <AddToolModal open={modalOpen} onOpenChange={setModalOpen} />
+    </div>
+  )
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="flex flex-col gap-3" aria-busy="true" aria-label="Loading tools">
+      {[1, 2, 3].map((n) => (
+        <div key={n} className="flex h-28 animate-pulse overflow-hidden rounded-lg border border-border bg-card">
+          <div className="w-[120px] shrink-0 bg-muted" />
+          <div className="flex flex-1 flex-col gap-2 p-3">
+            <div className="h-4 w-3/4 rounded bg-muted" />
+            <div className="h-3 w-full rounded bg-muted" />
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

@@ -13,15 +13,9 @@ import {
   Toolbox,
   X,
 } from "lucide-react"
-import { AdminUserRow, type AdminUser } from "@/components/admin-user-row"
+import { AdminUserRow } from "@/components/admin-user-row"
+import { useAdminUsers, useInviteUser } from "@/lib/hooks/useUsers"
 import { cn } from "@/lib/utils"
-
-const SEED_USERS: AdminUser[] = [
-  { id: "u1", name: "Anna Smith", email: "anna.smith@claridge.com", role: "admin" },
-  { id: "u2", name: "David Smith", email: "david.smith@claridge.com", role: "neighbor" },
-  { id: "u3", name: "Jennifer Smith", email: "jennifer.smith@claridge.com", role: "neighbor" },
-  { id: "u4", name: "Mike Peterson", email: "mike.peterson@claridge.com", role: "neighbor" },
-]
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -31,10 +25,12 @@ export default function AdminPage() {
 
   const [trustedEmail, setTrustedEmail] = useState("")
   const [emailError, setEmailError] = useState<string | null>(null)
-  const [addedEmails, setAddedEmails] = useState<string[]>([])
 
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedQuery, setDebouncedQuery] = useState("")
+
+  const { data: allUsers = [], isLoading: usersLoading, error: usersError } = useAdminUsers()
+  const inviteUser = useInviteUser()
 
   // Redirect non-admins away
   useEffect(() => {
@@ -56,7 +52,7 @@ export default function AdminPage() {
   const trimmed = debouncedQuery.trim().toLowerCase()
   const showResults = trimmed.length > 0
   const searchResults = showResults
-    ? SEED_USERS.filter(
+    ? allUsers.filter(
         (u) =>
           u.name.toLowerCase().includes(trimmed) ||
           u.email.toLowerCase().includes(trimmed),
@@ -69,13 +65,11 @@ export default function AdminPage() {
       setEmailError("Enter a valid email address.")
       return
     }
-    if (addedEmails.includes(email.toLowerCase())) {
-      setEmailError("This email has already been added.")
-      return
-    }
-    setAddedEmails((prev) => [...prev, email.toLowerCase()])
-    setTrustedEmail("")
     setEmailError(null)
+    inviteUser.mutate(email, {
+      onSuccess: () => setTrustedEmail(""),
+      onError: (err) => setEmailError(err.message),
+    })
   }
 
   return (
@@ -153,23 +147,27 @@ export default function AdminPage() {
                   aria-label="Trusted email address"
                   aria-invalid={emailError !== null}
                   aria-describedby={emailError ? "trusted-email-error" : undefined}
+                  disabled={inviteUser.isPending}
                   className={cn(
                     "flex-1 rounded-lg border bg-background px-3 py-2 text-sm text-foreground",
                     "placeholder:text-muted-foreground",
                     "focus:outline-none focus:ring-2 focus:ring-ring",
+                    "disabled:opacity-60",
                     emailError ? "border-destructive" : "border-input",
                   )}
                 />
                 <button
                   type="button"
                   onClick={handleAddEmail}
+                  disabled={inviteUser.isPending}
                   className={cn(
                     "shrink-0 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white",
                     "transition-colors hover:bg-green-700 active:translate-y-px",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2",
+                    "disabled:opacity-60 disabled:pointer-events-none",
                   )}
                 >
-                  Add
+                  {inviteUser.isPending ? "Sending…" : "Add"}
                 </button>
               </div>
               {emailError && (
@@ -179,6 +177,11 @@ export default function AdminPage() {
                   className="mt-2 text-xs font-medium text-destructive"
                 >
                   {emailError}
+                </p>
+              )}
+              {inviteUser.isSuccess && (
+                <p className="mt-2 text-xs font-medium text-green-700">
+                  Invite sent to {inviteUser.data.email}.
                 </p>
               )}
             </div>
@@ -229,17 +232,25 @@ export default function AdminPage() {
             {/* Search results */}
             {showResults && (
               <div className="border-t border-border">
-                <p className="px-4 py-2 text-xs font-medium text-muted-foreground">
-                  {searchResults.length === 0
-                    ? "No users found"
-                    : `${searchResults.length} ${searchResults.length === 1 ? "user" : "users"} found`}
-                </p>
-                {searchResults.length > 0 && (
-                  <div className="divide-y divide-border">
-                    {searchResults.map((u) => (
-                      <AdminUserRow key={u.id} user={u} />
-                    ))}
-                  </div>
+                {usersLoading ? (
+                  <p className="px-4 py-3 text-sm text-muted-foreground">Loading…</p>
+                ) : usersError ? (
+                  <p className="px-4 py-3 text-sm text-destructive">{usersError.message}</p>
+                ) : (
+                  <>
+                    <p className="px-4 py-2 text-xs font-medium text-muted-foreground">
+                      {searchResults.length === 0
+                        ? "No users found"
+                        : `${searchResults.length} ${searchResults.length === 1 ? "user" : "users"} found`}
+                    </p>
+                    {searchResults.length > 0 && (
+                      <div className="divide-y divide-border">
+                        {searchResults.map((u) => (
+                          <AdminUserRow key={u.id} user={u} />
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

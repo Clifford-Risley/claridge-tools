@@ -7,11 +7,19 @@ import { cn } from "@/lib/utils"
 
 const MAX_DESC = 300
 
+export interface ToolFormData {
+  name: string
+  description: string
+}
+
 export interface ToolFormProps {
   mode: "new" | "edit"
   initialName?: string
   initialDescription?: string
   initialImageUrl?: string | null
+  onSubmit?: (data: ToolFormData) => void
+  isSaving?: boolean
+  saveError?: string | null
 }
 
 export function ToolForm({
@@ -19,6 +27,9 @@ export function ToolForm({
   initialName = "",
   initialDescription = "",
   initialImageUrl = null,
+  onSubmit,
+  isSaving = false,
+  saveError = null,
 }: ToolFormProps) {
   const router = useRouter()
   const imageInputRef = useRef<HTMLInputElement>(null)
@@ -28,6 +39,13 @@ export function ToolForm({
   const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl)
   const [nameError, setNameError] = useState("")
   const [isDirty, setIsDirty] = useState(false)
+
+  // Sync form state when initial values load asynchronously (edit mode)
+  useEffect(() => {
+    setName(initialName)
+    setDescription(initialDescription)
+    setImageUrl(initialImageUrl ?? null)
+  }, [initialName, initialDescription, initialImageUrl])
 
   // Pick up an image passed through from the photo-upload modal flow
   useEffect(() => {
@@ -66,8 +84,12 @@ export function ToolForm({
       return
     }
     setNameError("")
-    // TODO: submit to API — navigate to My Tools on success
-    router.push("/my-listings")
+
+    if (onSubmit) {
+      onSubmit({ name: name.trim(), description })
+    } else {
+      router.push("/my-listings")
+    }
   }
 
   return (
@@ -193,18 +215,26 @@ export function ToolForm({
           />
         </div>
 
+        {saveError && (
+          <p className="text-sm text-destructive" role="alert">
+            {saveError}
+          </p>
+        )}
+
         {/* Save */}
         <button
           type="button"
           onClick={handleSave}
+          disabled={isSaving}
           className={cn(
             "flex w-full items-center justify-center rounded-lg",
             "bg-green-600 px-4 py-3 text-sm font-semibold text-white",
             "transition-colors hover:bg-green-700 active:translate-y-px",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2",
+            "disabled:opacity-60 disabled:pointer-events-none",
           )}
         >
-          Save Tool
+          {isSaving ? "Saving…" : "Save Tool"}
         </button>
       </div>
     </div>

@@ -30,3 +30,7 @@ class ToolRead(BaseModel):
     notes: str | None
     created_at: datetime
     updated_at: datetime
+
+
+class ToolReadWithOwner(ToolRead):
+    owner_name: str

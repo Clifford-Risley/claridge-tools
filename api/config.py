@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     clerk_issuer: str = ""
     clerk_secret_key: str = ""
     admin_clerk_user_id: str = ""
+    clerk_webhook_secret: str = ""
 
 
 settings = Settings()
