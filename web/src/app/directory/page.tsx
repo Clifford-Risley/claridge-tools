@@ -7,101 +7,25 @@ import { useUser } from "@clerk/nextjs"
 import { ChevronRight, Search } from "lucide-react"
 import { CategoryChip } from "@/components/category-chip"
 import { ToolCard, type Tool } from "@/components/tool-card"
+import { useSearchTools } from "@/lib/hooks/useTools"
 import { cn } from "@/lib/utils"
+import type { ToolRead } from "@/lib/api"
 
 const CATEGORIES = ["Power Tools", "Ladders", "Yard Work", "Cleaning", "More"]
 
-const SEED_TOOLS: Tool[] = [
-  {
-    id: "1",
-    name: "DeWalt Power Drill",
-    description: "18V cordless drill with two batteries, charger, and full bit set.",
-    category: "Power Tools",
-    owner: "Mike T.",
-    ownerInitials: "MT",
+function apiToolToCard(t: ToolRead): Tool {
+  return {
+    id: String(t.id),
+    name: t.name,
+    description: t.description ?? "",
+    category: t.category_tag ?? "",
+    owner: "Neighbor",
+    ownerInitials: "?",
     ownerImageUrl: null,
     imageUrl: null,
     removed: false,
-  },
-  {
-    id: "2",
-    name: "24 ft Extension Ladder",
-    description: "Aluminum extension ladder, excellent condition. Great for gutters and rooflines.",
-    category: "Ladders",
-    owner: "Sarah K.",
-    ownerInitials: "SK",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: false,
-  },
-  {
-    id: "3",
-    name: "Circular Saw",
-    description: '7-1/4" circular saw with blade guard, hard case, and extra blade.',
-    category: "Power Tools",
-    owner: "Jim R.",
-    ownerInitials: "JR",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: false,
-  },
-  {
-    id: "4",
-    name: "Lawn Mower",
-    description: "Self-propelled gas lawn mower. Easy pull-start, sharp blade, recently serviced.",
-    category: "Yard Work",
-    owner: "Anna P.",
-    ownerInitials: "AP",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: false,
-  },
-  {
-    id: "5",
-    name: "Pressure Washer",
-    description: "2,000 PSI electric pressure washer with 25 ft hose and four nozzle tips.",
-    category: "Cleaning",
-    owner: "Tom B.",
-    ownerInitials: "TB",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: false,
-  },
-  {
-    id: "6",
-    name: "6 ft Step Ladder",
-    description: "Fiberglass step ladder, 250 lb rated. Non-slip rubber feet, excellent condition.",
-    category: "Ladders",
-    owner: "Lisa M.",
-    ownerInitials: "LM",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: false,
-  },
-  {
-    id: "7",
-    name: "Leaf Blower",
-    description: "Cordless 40V leaf blower with battery and charger. Lightweight, low noise.",
-    category: "Yard Work",
-    owner: "Dave C.",
-    ownerInitials: "DC",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: false,
-  },
-  {
-    // removed — must never appear in results
-    id: "8",
-    name: "Old Chainsaw",
-    description: "Gas chainsaw, no longer available.",
-    category: "Power Tools",
-    owner: "Frank W.",
-    ownerInitials: "FW",
-    ownerImageUrl: null,
-    imageUrl: null,
-    removed: true,
-  },
-]
+  }
+}
 
 export default function DirectoryPage() {
   const { user } = useUser()
@@ -109,21 +33,15 @@ export default function DirectoryPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set())
 
-  const filteredTools = SEED_TOOLS.filter((t) => {
-    if (t.removed) return false
-    const q = query.toLowerCase().trim()
-    if (
-      q &&
-      !t.name.toLowerCase().includes(q) &&
-      !t.description.toLowerCase().includes(q) &&
-      !t.owner.toLowerCase().includes(q)
-    )
-      return false
-    // "More" acts as a pass-through placeholder until additional categories are defined
-    if (activeCategory && activeCategory !== "More" && t.category !== activeCategory)
-      return false
-    return true
-  })
+  const { data, isLoading, error } = useSearchTools(query)
+
+  const filteredTools = (data ?? [])
+    .map(apiToolToCard)
+    .filter((t) => {
+      if (activeCategory && activeCategory !== "More" && t.category !== activeCategory)
+        return false
+      return true
+    })
 
   function toggleBookmark(id: string) {
     setBookmarks((prev) => {
@@ -178,7 +96,6 @@ export default function DirectoryPage() {
       {/* Search row + category chips */}
       <div className="shrink-0 border-b border-border px-4 pb-3 pt-3">
         <div className="flex gap-2">
-          {/* Search input */}
           <div className="relative flex-1">
             <Search
               className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -197,10 +114,8 @@ export default function DirectoryPage() {
               )}
             />
           </div>
-
         </div>
 
-        {/* Category chips — horizontally scrollable, negative margin to bleed to edges */}
         <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {CATEGORIES.map((cat) => (
             <CategoryChip
@@ -218,12 +133,18 @@ export default function DirectoryPage() {
       {/* Results heading */}
       <p className="shrink-0 px-4 py-2.5 text-sm font-medium text-muted-foreground">
         Tools nearby{" "}
-        <span className="text-foreground">({filteredTools.length})</span>
+        {!isLoading && !error && (
+          <span className="text-foreground">({filteredTools.length})</span>
+        )}
       </p>
 
       {/* Scrollable results list */}
       <div className="flex-1 overflow-y-auto px-4 pb-4">
-        {filteredTools.length === 0 ? (
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : error ? (
+          <ErrorState message={error.message} onClear={clearFilters} />
+        ) : filteredTools.length === 0 ? (
           <EmptyState onClear={clearFilters} />
         ) : (
           <div className="flex flex-col gap-3">
@@ -238,7 +159,43 @@ export default function DirectoryPage() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
 
+function LoadingSkeleton() {
+  return (
+    <div className="flex flex-col gap-3" aria-busy="true" aria-label="Loading tools">
+      {[1, 2, 3].map((n) => (
+        <div key={n} className="flex h-28 animate-pulse overflow-hidden rounded-lg border border-border bg-card">
+          <div className="w-[120px] shrink-0 bg-muted" />
+          <div className="flex flex-1 flex-col gap-2 p-3">
+            <div className="h-4 w-3/4 rounded bg-muted" />
+            <div className="h-3 w-full rounded bg-muted" />
+            <div className="h-3 w-2/3 rounded bg-muted" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ErrorState({ message, onClear }: { message: string; onClear: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-16 text-center">
+      <p className="font-medium text-destructive">Failed to load tools</p>
+      <p className="text-sm text-muted-foreground">{message}</p>
+      <button
+        type="button"
+        onClick={onClear}
+        className={cn(
+          "mt-1 rounded-lg border border-border px-4 py-2 text-sm font-medium",
+          "transition-colors hover:bg-muted",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        )}
+      >
+        Clear filters
+      </button>
     </div>
   )
 }
@@ -267,4 +224,3 @@ function EmptyState({ onClear }: { onClear: () => void }) {
     </div>
   )
 }
-

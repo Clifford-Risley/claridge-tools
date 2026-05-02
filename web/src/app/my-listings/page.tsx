@@ -8,39 +8,10 @@ import { useUser } from "@clerk/nextjs"
 import { ChevronRight, Pencil, Plus, Trash2, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AddToolModal } from "@/components/add-tool-modal"
+import { useCurrentUser } from "@/lib/hooks/useUsers"
+import { useMyTools, useDeleteTool } from "@/lib/hooks/useTools"
 import { cn } from "@/lib/utils"
-
-interface Tool {
-  id: string
-  name: string
-  description: string
-  available: boolean
-  imageUrl: string | null
-}
-
-const SEED_TOOLS: Tool[] = [
-  {
-    id: "1",
-    name: "DeWalt Power Drill",
-    description: "18V cordless drill with two batteries and a charger. Includes a full bit set.",
-    available: true,
-    imageUrl: null,
-  },
-  {
-    id: "2",
-    name: "24 ft Extension Ladder",
-    description: "Aluminum extension ladder, excellent condition. Great for gutters and rooflines.",
-    available: true,
-    imageUrl: null,
-  },
-  {
-    id: "3",
-    name: "Circular Saw",
-    description: '7-1/4" circular saw with blade guard and hard case. Extra blade included.',
-    available: true,
-    imageUrl: null,
-  },
-]
+import type { ToolRead } from "@/lib/api"
 
 export default function MyListingsPage() {
   return (
@@ -55,13 +26,18 @@ function MyListingsView() {
   const searchParams = useSearchParams()
   const showEmpty = searchParams.get("empty") === "true"
 
-  const [tools, setTools] = useState<Tool[]>(showEmpty ? [] : SEED_TOOLS)
-  const [confirmId, setConfirmId] = useState<string | null>(null)
+  const { data: currentUser } = useCurrentUser()
+  const { data: tools = [], isLoading, error } = useMyTools(currentUser?.id ?? 0)
+
+  const [confirmId, setConfirmId] = useState<number | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
-  function handleRemove(id: string) {
-    setTools((prev) => prev.filter((t) => t.id !== id))
-    setConfirmId(null)
+  const deleteTool = useDeleteTool()
+
+  const displayTools = showEmpty ? [] : tools
+
+  function handleRemove(id: number) {
+    deleteTool.mutate(id, { onSuccess: () => setConfirmId(null) })
   }
 
   return (
@@ -106,15 +82,20 @@ function MyListingsView() {
           </p>
         </div>
 
-        {tools.length === 0 ? (
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : error ? (
+          <ErrorState message={error.message} />
+        ) : displayTools.length === 0 ? (
           <EmptyState onAddTool={() => setModalOpen(true)} />
         ) : (
           <div className="flex flex-col gap-3">
-            {tools.map((tool) => (
+            {displayTools.map((tool) => (
               <ToolCard
                 key={tool.id}
                 tool={tool}
                 confirming={confirmId === tool.id}
+                deleting={deleteTool.isPending && confirmId === tool.id}
                 onConfirmStart={() => setConfirmId(tool.id)}
                 onConfirmCancel={() => setConfirmId(null)}
                 onConfirmRemove={() => handleRemove(tool.id)}
@@ -126,6 +107,31 @@ function MyListingsView() {
       </div>
 
       <AddToolModal open={modalOpen} onOpenChange={setModalOpen} />
+    </div>
+  )
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="flex flex-col gap-3" aria-busy="true" aria-label="Loading your tools">
+      {[1, 2].map((n) => (
+        <div key={n} className="flex h-28 animate-pulse overflow-hidden rounded-lg border border-border bg-card">
+          <div className="w-[120px] shrink-0 bg-muted" />
+          <div className="flex flex-1 flex-col gap-2 p-3">
+            <div className="h-4 w-3/4 rounded bg-muted" />
+            <div className="h-3 w-full rounded bg-muted" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ErrorState({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-16 text-center">
+      <p className="font-medium text-destructive">Failed to load your tools</p>
+      <p className="text-sm text-muted-foreground">{message}</p>
     </div>
   )
 }
@@ -166,12 +172,14 @@ function AddToolButton({ onClick }: { onClick: () => void }) {
 function ToolCard({
   tool,
   confirming,
+  deleting,
   onConfirmStart,
   onConfirmCancel,
   onConfirmRemove,
 }: {
-  tool: Tool
+  tool: ToolRead
   confirming: boolean
+  deleting: boolean
   onConfirmStart: () => void
   onConfirmCancel: () => void
   onConfirmRemove: () => void
@@ -181,28 +189,17 @@ function ToolCard({
       className="flex overflow-hidden rounded-lg border border-border bg-card"
       data-testid="tool-card"
     >
-      {/* 120 px wide image column; rounded left corners come from parent overflow-hidden */}
       <div className="flex w-[120px] shrink-0 items-center justify-center bg-muted">
-        {tool.imageUrl ? (
-          <img
-            src={tool.imageUrl}
-            alt={tool.name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <Wrench className="size-8 text-muted-foreground/30" aria-hidden />
-        )}
+        <Wrench className="size-8 text-muted-foreground/30" aria-hidden />
       </div>
 
       <div className="flex flex-1 flex-col justify-between gap-2 p-3">
         <div className="flex flex-col gap-1">
           <p className="font-semibold leading-snug text-foreground">{tool.name}</p>
           <p className="line-clamp-2 text-sm text-muted-foreground">{tool.description}</p>
-          {tool.available && (
-            <span className="mt-0.5 inline-flex w-fit items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-              Available
-            </span>
-          )}
+          <span className="mt-0.5 inline-flex w-fit items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+            Available
+          </span>
         </div>
 
         {confirming ? (
@@ -213,14 +210,16 @@ function ToolCard({
                 size="xs"
                 variant="destructive"
                 onClick={onConfirmRemove}
+                disabled={deleting}
                 aria-label={`Confirm remove ${tool.name}`}
               >
-                Remove
+                {deleting ? "Removing…" : "Remove"}
               </Button>
               <Button
                 size="xs"
                 variant="outline"
                 onClick={onConfirmCancel}
+                disabled={deleting}
                 aria-label="Cancel remove"
               >
                 Cancel

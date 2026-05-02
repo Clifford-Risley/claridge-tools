@@ -7,6 +7,7 @@ import { useUser } from "@clerk/nextjs"
 import { ChevronRight, Heart } from "lucide-react"
 import { EditProfileModal } from "@/components/edit-profile-modal"
 import { ProfileCard } from "@/components/profile-card"
+import { useCurrentUser } from "@/lib/hooks/useUsers"
 import { cn } from "@/lib/utils"
 
 const SECTIONS = [
@@ -36,6 +37,7 @@ const SECTIONS = [
 export default function MyAccountPage() {
   const { user } = useUser()
   const [editOpen, setEditOpen] = useState(false)
+  const { data: backendUser } = useCurrentUser()
 
   const isAdmin = user?.publicMetadata?.role === "admin"
 
@@ -45,8 +47,8 @@ export default function MyAccountPage() {
     "Neighbor"
 
   const email = user?.primaryEmailAddress?.emailAddress ?? null
-  const phone = user?.primaryPhoneNumber?.phoneNumber ?? null
-  const address: string | null = null
+  const phone = backendUser?.phone ?? user?.primaryPhoneNumber?.phoneNumber ?? null
+  const address: string | null = backendUser?.address ?? null
   const memberSinceYear = user?.createdAt
     ? new Date(user.createdAt).getFullYear()
     : null
