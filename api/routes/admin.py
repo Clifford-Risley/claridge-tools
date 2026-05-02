@@ -9,7 +9,7 @@ from db import get_db
 from deps import get_current_user
 from models.tool import Tool
 from models.user import User
-from schemas.tool import ToolRead, ToolReadWithOwner
+from schemas.tool import ToolReadWithOwner
 from schemas.user import UserRead
 
 router = APIRouter(prefix="/admin", tags=["admin"])

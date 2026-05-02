@@ -188,12 +188,12 @@ async def test_admin_list_tools_returns_enriched(admin_user: User, test_user: Us
     tool.created_at = datetime(2026, 1, 1)
     tool.updated_at = datetime(2026, 1, 1)
 
-    async def mock_get_db() -> AsyncGenerator[AsyncSession, None]:
+    async def mock_get_db() -> AsyncGenerator[AsyncSession]:
         result = MagicMock()
         result.all.return_value = [(tool, test_user.display_name)]
         mock_db = AsyncMock(spec=AsyncSession)
         mock_db.execute.return_value = result
-        yield mock_db  # type: ignore[misc]
+        yield mock_db
 
     app.dependency_overrides[get_current_user] = lambda: admin_user
     app.dependency_overrides[get_db] = mock_get_db
@@ -237,14 +237,14 @@ async def test_admin_list_tools_non_admin_returns_403(test_user: User) -> None:
 
 @pytest.mark.asyncio
 async def test_admin_list_users_returns_all(admin_user: User, test_user: User) -> None:
-    async def mock_get_db() -> AsyncGenerator[AsyncSession, None]:
+    async def mock_get_db() -> AsyncGenerator[AsyncSession]:
         scalars = MagicMock()
         scalars.all.return_value = [test_user]
         result = MagicMock()
         result.scalars.return_value = scalars
         mock_db = AsyncMock(spec=AsyncSession)
         mock_db.execute.return_value = result
-        yield mock_db  # type: ignore[misc]
+        yield mock_db
 
     app.dependency_overrides[get_current_user] = lambda: admin_user
     app.dependency_overrides[get_db] = mock_get_db

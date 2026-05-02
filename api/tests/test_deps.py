@@ -60,10 +60,12 @@ def _mock_jwks_client(public_key: RSAPublicKey) -> MagicMock:
 
 @pytest.mark.asyncio
 async def test_missing_token_raises_401() -> None:
+    mock_request = MagicMock()
+    mock_request.method = "GET"
     mock_db = AsyncMock(spec=AsyncSession)
 
     with pytest.raises(HTTPException) as exc_info:
-        await get_current_user(credentials=None, db=mock_db)
+        await get_current_user(request=mock_request, credentials=None, db=mock_db)
 
     assert exc_info.value.status_code == 401
     assert exc_info.value.detail == "Not authenticated"
@@ -89,10 +91,13 @@ async def test_valid_jwt_returns_user(
     mock_db = AsyncMock(spec=AsyncSession)
     mock_db.execute.return_value = result_mock
 
+    mock_request = MagicMock()
+    mock_request.method = "GET"
+
     with patch("deps._get_jwks_client", return_value=_mock_jwks_client(_rsa_public_key)):
         with patch("deps.settings") as mock_settings:
             mock_settings.clerk_issuer = "https://clerk.test"
-            user = await get_current_user(credentials=credentials, db=mock_db)
+            user = await get_current_user(request=mock_request, credentials=credentials, db=mock_db)
 
     assert user is test_user
 
@@ -111,11 +116,14 @@ async def test_expired_jwt_raises_401(
     credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
     mock_db = AsyncMock(spec=AsyncSession)
 
+    mock_request = MagicMock()
+    mock_request.method = "GET"
+
     with patch("deps._get_jwks_client", return_value=_mock_jwks_client(_rsa_public_key)):
         with patch("deps.settings") as mock_settings:
             mock_settings.clerk_issuer = "https://clerk.test"
             with pytest.raises(HTTPException) as exc_info:
-                await get_current_user(credentials=credentials, db=mock_db)
+                await get_current_user(request=mock_request, credentials=credentials, db=mock_db)
 
     assert exc_info.value.status_code == 401
     assert exc_info.value.detail == "Token expired"
@@ -137,12 +145,15 @@ async def test_invalid_signature_raises_401(
     credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
     mock_db = AsyncMock(spec=AsyncSession)
 
+    mock_request = MagicMock()
+    mock_request.method = "GET"
+
     wrong_public_key: RSAPublicKey = _rsa_private_key.public_key()
     with patch("deps._get_jwks_client", return_value=_mock_jwks_client(wrong_public_key)):
         with patch("deps.settings") as mock_settings:
             mock_settings.clerk_issuer = "https://clerk.test"
             with pytest.raises(HTTPException) as exc_info:
-                await get_current_user(credentials=credentials, db=mock_db)
+                await get_current_user(request=mock_request, credentials=credentials, db=mock_db)
 
     assert exc_info.value.status_code == 401
     assert exc_info.value.detail == "Invalid token"
