@@ -37,16 +37,18 @@ def _user_created_payload(
     first_name: str = "Alice",
     last_name: str = "Smith",
 ) -> str:
-    return json.dumps({
-        "type": "user.created",
-        "data": {
-            "id": clerk_id,
-            "primary_email_address_id": "iead_primary",
-            "email_addresses": [{"id": "iead_primary", "email_address": email}],
-            "first_name": first_name,
-            "last_name": last_name,
-        },
-    })
+    return json.dumps(
+        {
+            "type": "user.created",
+            "data": {
+                "id": clerk_id,
+                "primary_email_address_id": "iead_primary",
+                "email_addresses": [{"id": "iead_primary", "email_address": email}],
+                "first_name": first_name,
+                "last_name": last_name,
+            },
+        }
+    )
 
 
 def _mock_db(existing_user: User | None = None) -> AsyncMock:
@@ -149,16 +151,18 @@ async def test_display_name_construction(
     email: str,
     expected_display: str,
 ) -> None:
-    body_str = json.dumps({
-        "type": "user.created",
-        "data": {
-            "id": "user_name_test",
-            "primary_email_address_id": "iead_1",
-            "email_addresses": [{"id": "iead_1", "email_address": email}],
-            "first_name": first_name,
-            "last_name": last_name,
-        },
-    })
+    body_str = json.dumps(
+        {
+            "type": "user.created",
+            "data": {
+                "id": "user_name_test",
+                "primary_email_address_id": "iead_1",
+                "email_addresses": [{"id": "iead_1", "email_address": email}],
+                "first_name": first_name,
+                "last_name": last_name,
+            },
+        }
+    )
     response, mock_session = await _post(body_str.encode(), _signed_headers(body_str))
 
     assert response.status_code == 200
