@@ -29,7 +29,14 @@
       "Bash(git push *)",
       "Bash(gh run *)",
       "PowerShell(gh run *)",
-      "Bash(python -m pytest tests/test_admin.py -v)"
+      "Bash(python -m pytest tests/test_admin.py -v)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run list --branch feature/edit-profile-modal --limit 5 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run view 25241626842 --log-failed 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run list --branch feature/edit-profile-modal --limit 3 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" run view 25241792185 --log-failed 2>&1)",
+      "Bash(python -c \"import os; print\\('test files:'\\); import glob; [print\\(' ', f\\) for f in sorted\\(glob.glob\\('tests/test_*.py'\\)\\)]\")",
+      "PowerShell(Get-ChildItem -Force -Path . -Filter \".claude*\" | Select-Object Name; \"---\"; Get-ChildItem -Force -Path . -Filter \".claudeignore\" | Select-Object Name; \"---\"; Get-ChildItem -Path docs/ -Force | Select-Object Name)"
     ]
   }
 }
